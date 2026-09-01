@@ -28,7 +28,15 @@ native 绑定，无漂移）。
 ## 安装
 
 ```bash
-dsh plugin install @kkutysllb/dsh-terminal
+# npm registry（推荐：版本可被插件管理检测，用户手动更新）
+# npm registry (recommended: version detection with manual updates)
+dsh plugin --profile web add @kkutysllb/dsh-terminal
+
+# GitHub 直装 / install straight from GitHub
+dsh plugin --profile web add github:kkutysllb/dsh-terminal
+
+# 或从 dsh-plugins 真源仓 / or from the dsh-plugins monorepo
+dsh plugin --profile web add github:kkutysllb/dsh-plugins#dsh-terminal
 ```
 
 ## 形态
