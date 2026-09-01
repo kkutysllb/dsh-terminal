@@ -1,5 +1,5 @@
 /**
- * dsh-terminal 单测：node 直跑（无框架，断言抛错即失败）。
+ * @kkutysllb/dsh-terminal 单测：node 直跑（无框架，断言抛错即失败）。
  *
  * 覆盖：
  * - 纯逻辑：clampH 界限 / usableDir 目录校验 / dispatchRpc 参数校验

@@ -1,4 +1,4 @@
-# dsh-terminal
+# @kkutysllb/dsh-terminal
 
 > **侧边栏嵌入式终端**——主界面底部的真实终端（xterm.js + node-pty，VS Code 同款体验）：per-workspace 面板桶、RPC（`/dsh-terminal/api/rpc` + SSE 输出流）、工作区探针与乱序防御、布局让位协议。
 
@@ -7,7 +7,7 @@
 ## 安装
 
 ```bash
-dsh plugin install dsh-terminal
+dsh plugin install @kkutysllb/dsh-terminal
 ```
 
 ## 形态

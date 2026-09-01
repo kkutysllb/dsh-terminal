@@ -13,7 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const PKG_NAME = 'dsh-terminal'
+const PKG_NAME = '@kkutysllb/dsh-terminal'
 const HAS_CLIENT = true
 const INTACT = ['vendor']
 const KEEP_LEGACY = [] // 跨层持久化协议锚点（豁免旧名残留检查）
@@ -52,6 +52,7 @@ if (HAS_CLIENT) {
 // 4) cordis.patch.yml name 指向
 const patch = src('cordis.patch.yml') ?? ''
 ok('patch name 指向新包名', patch.includes("name: '" + PKG_NAME + "'") || patch.includes('name: "' + PKG_NAME + '"'))
+ok('YAML 无裸 @ 值（patch 行，@ 为 anchor 保留字须引号）', !/:\s+@/.test(patch))
 
 // 5) 旧名/旧锚点零残留（scripts/release 不属于交付面，豁免）
 const legacy = ['@kcoder/git-panel', '@kcoder/stats-panel', '@kcoder/terminal',

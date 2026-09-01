@@ -1,5 +1,5 @@
 {
-  "name": "dsh-terminal",
+  "name": "@kkutysllb/dsh-terminal",
   "version": "1.0.0",
   "description": "dsh-external in-box dsh bundle: embedded terminal panel (node-pty backed multi-tab shells, per-workspace buckets, xterm.js UI) as a bottom dock inside the dsh web page, replacing the retired Electron host terminal-panel.",
   "license": "MIT",
@@ -39,5 +39,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kkutysllb/dsh-terminal.git"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

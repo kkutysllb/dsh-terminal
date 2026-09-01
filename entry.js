@@ -1,5 +1,5 @@
 /**
- * dsh-terminal — server 半（dsh web 插件，cordis patch 层挂载）。
+ * @kkutysllb/dsh-terminal — server 半（dsh web 插件，cordis patch 层挂载）。
  *
  * 嵌入式终端 RPC（逻辑平移自退役宿主 desktop/main/pty-host.ts +
  * terminal-panel.ts，语义保持一致）：
@@ -22,7 +22,7 @@
  * 纯逻辑（桶管理/参数校验）导出供 tests/run-tests.mjs node 直跑；
  * spawn 集成用例走真 pty。
  *
- * @module dsh-terminal/entry
+ * @module @kkutysllb/dsh-terminal/entry
  */
 
 import { createRequire } from 'node:module'

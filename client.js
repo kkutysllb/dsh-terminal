@@ -1,5 +1,5 @@
 /**
- * dsh-terminal — client 半（dsh shell 页面内自包含交付物）。
+ * @kkutysllb/dsh-terminal — client 半（dsh shell 页面内自包含交付物）。
  *
  * 嵌入式终端面板：主界面底部的真实终端（VS Code 同款），平移自退役
  * 宿主（desktop/main/terminal-panel.ts 的 PAGE_JS + pty-host 编排 +
@@ -27,11 +27,11 @@
  *
  * 按钮接替旧宿主位 right:44（拖拽区显式 no-drag），id __dsh_kc_term_btn。
  *
- * @module dsh-terminal/client
+ * @module @kkutysllb/dsh-terminal/client
  */
 
 window.__ModuleLoader__.load({
-  id: 'dsh-terminal',
+  id: '@kkutysllb/dsh-terminal',
   factory: () => {
     const exports = {}
 
