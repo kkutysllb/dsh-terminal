@@ -12,7 +12,7 @@
  */
 
 import * as assert from 'node:assert'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PtyHost, dispatchRpc, isTrusted, clampH, usableDir, PANEL_MIN_H, PANEL_MAX_H, loadNodePty, nodePtyLoadCause, depsStatus, buildRepairCommand, findProfileDir, defaultShell, shellSpawnArgs, shellDisplayName, appendTranscript, TRANSCRIPT_LIMIT, ensureSpawnHelper } from '../entry.js'
@@ -193,6 +193,28 @@ await test('依赖层: findProfileDir 双证探测 + 回退', async () => {
     writeFileSync(join(dir, 'package.json'), '{}')
     writeFileSync(join(dir, 'pnpm-workspace.yaml'), 'packages: []')
     assert.strictEqual(findProfileDir(join(dir, 'node_modules', 'x', 'entry.js')), dir)
+
+    // QILIN_HOME 优先于 DSH_HOME（QiLin 注入形态：启动器注入 QILIN_HOME 并把
+    // DSH_HOME 钉定到同一处；两者同时存在时以 QILIN_HOME 为准）
+    const qilinHome = mkdtempSync(join(tmpdir(), 'kc-qilin-home-'))
+    const dshHome = mkdtempSync(join(tmpdir(), 'kc-dsh-home-'))
+    const outside = mkdtempSync(join(tmpdir(), 'kc-outside-'))
+    const web = join(qilinHome, 'profiles', 'web')
+    mkdirSync(web, { recursive: true })
+    writeFileSync(join(web, 'package.json'), '{}')
+    writeFileSync(join(web, 'pnpm-workspace.yaml'), 'packages: []')
+    const previous = { QILIN_HOME: process.env.QILIN_HOME, DSH_HOME: process.env.DSH_HOME }
+    process.env.QILIN_HOME = qilinHome
+    process.env.DSH_HOME = dshHome
+    try {
+      assert.strictEqual(findProfileDir(join(outside, 'entry.js')), realpathSync(web))
+    } finally {
+      if (previous.QILIN_HOME === undefined) delete process.env.QILIN_HOME
+      else process.env.QILIN_HOME = previous.QILIN_HOME
+      if (previous.DSH_HOME === undefined) delete process.env.DSH_HOME
+      else process.env.DSH_HOME = previous.DSH_HOME
+      for (const cleanup of [qilinHome, dshHome, outside]) rmSync(cleanup, { recursive: true, force: true })
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

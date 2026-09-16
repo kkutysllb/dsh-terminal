@@ -141,14 +141,15 @@ function isProfileRoot(dir) {
 
 /**
  * 探测本插件安装所在的 profile 目录：插件模块的最近双证祖先（profile
- * 根，插件从其 node_modules 解析）；探测不到回退 $DSH_HOME/profiles/web
- * （标准 web profile）；仍不像则 null。
+ * 根，插件从其 node_modules 解析）；探测不到回退 <宿主 home>/profiles/web
+ * （$QILIN_HOME → $DSH_HOME → ~/.dsh，标准 web profile）；仍不像则 null。
  */
 export function findProfileDir(fromFile = fileURLToPath(import.meta.url)) {
   const detected = walkUp(realDir(fromFile), isProfileRoot)
   if (detected !== null) return detected
-  const home = process.env.DSH_HOME !== undefined && process.env.DSH_HOME.trim() !== ''
-    ? process.env.DSH_HOME
+  const configured = process.env.QILIN_HOME ?? process.env.DSH_HOME
+  const home = configured !== undefined && configured.trim() !== ''
+    ? configured
     : join(homedir(), '.dsh')
   const web = join(home, 'profiles', 'web')
   return isProfileRoot(web) ? realpathSync(web) : null
