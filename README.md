@@ -58,9 +58,11 @@ qilin plugin --profile qilin add github:kkutysllb/dsh-terminal
   Windows `DSH_TERMINAL_SHELL` → pwsh 探测链（PATH + 已知安装目录）→
   `powershell.exe`；POSIX 以登录 shell 启动（读 profile 文件）。
 
-node-pty 版本契约：`^1.1.0`，与 DSH core（`@deepseek-ai/dsh-subprocess-local`）
-同 range——同 range 同 integrity 让 pnpm 两侧解析到同一物理包（一份
-native 绑定，无漂移）。
+node-pty 版本契约：`^1.1.0`（v1.1.1 起声明于 dependencies），与 DSH core
+（`@deepseek-ai/dsh-subprocess-local`）同 range——同 range 同 integrity 让
+pnpm 两侧解析到同一物理包（一份 native 绑定，无漂移）。dsh 0.1.6-alpha.2
+起依赖解析默认运行时模式且共享保留区（`profiles/node_modules`）被排除，
+未声明的提升副本不再可解析——声明依赖是唯一稳定入口。
 
 ## 安装
 
