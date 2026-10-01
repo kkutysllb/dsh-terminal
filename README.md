@@ -26,6 +26,19 @@ dsh-super-ppts 等）的现行约定，换来管理器的兼容展示与失配�
 profile 侧 `autoInstallPeers: false` 下，声明的 peer 缺失只会产生
 pnpm 警告，不阻断安装（KCoder 桌面壳会自动补 `peerDependencyRules`）。
 
+### 开关按钮锚点链（v1.2.0 起）
+
+面板开关按钮按宿主形态二选一注入：
+
+- **KCoder 桌面壳**：主进程 `executeJavaScript` 注入的自绘标题栏
+  `#__dsh_desktop_titlebar`（绝对定位 `right:44`）——v1.1.x 唯一锚点；
+- **原生 dsh web/桌面壳**：上游会话头右上角动作区
+  `[data-slot="conversation.session.header.corner"]`（slot 工具化 DOM，
+  外层另有非哈希 `data-conversation-header-corner` 兜底）——原生壳没有
+  锚点 1，v1.1.x 在此形态按钮永不出现；corner 内按钮 28px 对齐邻居、
+  `no-drag`（头行整体 `data-window-drag`）、颜色随头行主题。会话头仅
+  会话页渲染，其余页面按钮随路由消失属预期（5s 巡逻重建）。
+
 ## QiLin 双通道适配（v1.1.0 起）
 
 manifest 同时声明 `qilin` 与 `dsh` 两个通道的 `bundle.patch` / `client`：
