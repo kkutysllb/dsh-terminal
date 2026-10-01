@@ -262,7 +262,7 @@ window.__ModuleLoader__.load({
       const style = el('style')
       style.id = STYLE_ID
       style.textContent = `
-${BTN_ID}:not(.kt-corner){all:unset;box-sizing:border-box;position:absolute;right:44px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;cursor:pointer;color:rgba(26,29,33,.65);-webkit-app-region:no-drag;transition:background .15s ease}
+#${BTN_ID}:not(.kt-corner){all:unset;box-sizing:border-box;position:absolute;right:44px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;cursor:pointer;color:rgba(26,29,33,.65);-webkit-app-region:no-drag;transition:background .15s ease}
 body[data-ds-dark-theme] #${BTN_ID}:not(.kt-corner){color:rgba(232,234,237,.8)}
 #${BTN_ID}.kt-corner{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;margin-left:6px;border-radius:7px;cursor:pointer;color:inherit;-webkit-app-region:no-drag;transition:background .15s ease}
 #${BTN_ID}:hover{background:color-mix(in srgb,currentColor 10%,transparent)}
@@ -878,11 +878,29 @@ body[data-ds-dark-theme] #${BTN_ID}:not(.kt-corner){color:rgba(232,234,237,.8)}
        *   遮挡。corner 为 display:contents 包装器，按钮作为其末位子节点
        *   参与标题行 flex；行整体 data-window-drag，按钮显式 no-drag。
        *   会话头仅会话页渲染（hero/设置页无 corner）→ 页面内按钮随
-       *   路由消失属预期，巡逻恢复；锚点 1 存在时永远优先。 */
+       *   路由消失属预期，巡逻恢复；锚点 1 存在时永远优先——含竞态后到
+       *   升级（corner 先落、标题栏后现 → 巡逻迁回标题栏）。 */
       const CORNER_ID = 'conversation.session.header.corner'
       const injectBtn = () => {
-        if (document.getElementById(BTN_ID) !== null) return 'present'
-        let host = document.getElementById(TITLEBAR_ID)
+        const existing = document.getElementById(BTN_ID)
+        const bar = document.getElementById(TITLEBAR_ID)
+        // 孤儿回收：锚点宿主被上游整表重写时按钮随之脱挂——视为缺失重建
+        //（v1.1.x 起的旧洞：脱挂按钮占住 id，巡逻永远 'present' 不重建）。
+        if (existing !== null && !existing.isConnected) existing.remove()
+        if (existing !== null && existing.isConnected) {
+          // 锚点升级：corner 只是回退位。KCoder 壳的标题栏由主进程
+          // executeJavaScript 在 did-finish-load 注入，时序可能晚于 React
+          // 会话头首帧（竞态窗口内按钮先落 corner 且再不挪位——v1.2.0
+          // KCoder 回归的根因）；巡逻发现标题栏即迁回 v1.1.x 位形
+          // （right:44 绝对定位）。原生壳无标题栏 → 永驻 corner，不受影响。
+          if (bar !== null && existing.classList.contains('kt-corner')) {
+            existing.classList.remove('kt-corner')
+            bar.append(existing)
+            return 'moved'
+          }
+          return 'present'
+        }
+        let host = bar
         let cornerMode = false
         if (host === null) {
           cornerMode = true
