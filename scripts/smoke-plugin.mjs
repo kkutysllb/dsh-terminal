@@ -4,9 +4,9 @@
  * prepack 自动执行，任何 FAIL 中断发布。
  *
  * 校验面：package.json 契约（name/version/main/dsh.bundle.patch/
- * exports["./client"]）、产物在位（entry/client/['vendor']/）、模块
- * id 注册（__ModuleLoader__.load({id})）、cordis.patch.yml 的 name
- * 指向、旧名/旧锚点零残留。
+ * dsh.manifestVersion/兼容 peer/exports["./client"]）、产物在位
+ * （entry/client/['vendor']/）、模块 id 注册（__ModuleLoader__.load
+ * ({id})）、cordis.patch.yml 的 name 指向、旧名/旧锚点零残留。
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -17,6 +17,10 @@ const PKG_NAME = '@kkutysllb/dsh-terminal'
 const HAS_CLIENT = true
 const INTACT = ['vendor']
 const KEEP_LEGACY = [] // 跨层持久化协议锚点（豁免旧名残留检查）
+/** dsh 兼容范围（与 peerDependencies 一字不差；上界 <0.2.0 使 0.2.0-rc.*
+ * 预发布在 includePrerelease 语义下命中，0.2.0 正式版发布时须重新评审升版） */
+const DSH_COMPAT_RANGE = '>=0.1.6-alpha.2 <0.2.0'
+const DSH_PEERS = ['@deepseek-ai/dsh', '@deepseek-ai/dsh-host-webserver']
 
 const src = (p) => (existsSync(join(ROOT, p)) ? readFileSync(join(ROOT, p), 'utf8') : null)
 
@@ -31,6 +35,22 @@ ok('name == ' + PKG_NAME, pkg.name === PKG_NAME, String(pkg.name))
 ok('version 合法', /^\d+\.\d+\.\d+$/.test(String(pkg.version)), String(pkg.version))
 ok('main 入口声明', pkg.main === 'entry.js', String(pkg.main))
 ok('dsh.bundle.patch 声明', pkg.dsh?.bundle?.patch === './cordis.patch.yml')
+
+// 1b) dsh 0.2.0 兼容声明（app-boot/plugin-manager 双检查器按
+// peerDependencies + includePrerelease 评估；engines.dsh 仅为声明性文档）
+ok('dsh.manifestVersion == 1', pkg.dsh?.manifestVersion === 1, String(pkg.dsh?.manifestVersion))
+ok('engines.node >= 20', (() => {
+  const raw = String(pkg.engines?.node ?? '')
+  const floor = Number.parseFloat(raw.replace(/^\s*(>=|<=|>|<|\^|~)/, ''))
+  return Number.isFinite(floor) && floor >= 20
+})(), String(pkg.engines?.node))
+ok('engines.dsh == 兼容范围', pkg.engines?.dsh === DSH_COMPAT_RANGE, String(pkg.engines?.dsh))
+for (const peer of DSH_PEERS) {
+  ok('peer 声明 ' + peer, pkg.peerDependencies?.[peer] === DSH_COMPAT_RANGE,
+    String(pkg.peerDependencies?.[peer]))
+}
+ok('peer 无 @deepseek-ai/dsh* 以外的检查面键', Object.keys(pkg.peerDependencies ?? {})
+  .every((name) => DSH_PEERS.includes(name)), Object.keys(pkg.peerDependencies ?? {}).join(', '))
 
 // 2) 产物在位
 ok('entry.js 存在', src('entry.js') !== null)

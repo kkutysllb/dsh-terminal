@@ -4,6 +4,28 @@
 
 自 KCoder 内置包独立发布的 dsh 插件（v1.0.0 起独立版本线）。
 
+## dsh 0.2.0 兼容声明（v1.2.0 起）
+
+manifest 按新代插件约定声明兼容面，供 plugin-manager 的安装前检查与
+app-boot 的启动准入评估（两处共用同一检查器：只看 `@deepseek-ai/dsh`
+与 `@deepseek-ai/dsh-*` 前缀的 peer，`includePrerelease: true` 语义）：
+
+- `dsh.manifestVersion: 1` —— 新 manifest 格式版本标记；
+- `peerDependencies`：`@deepseek-ai/dsh` 与 `@deepseek-ai/dsh-host-webserver`
+  （插件绑定的 webServer 服务所在包）声明 `>=0.1.6-alpha.2 <0.2.0`。
+  **semver 里 `0.2.0-rc.* < 0.2.0`**，因此该范围在 prerelease 参与匹配的
+  语义下同时命中 0.1.6-alpha.2（v1.1.x 线的适配基线）与 0.2.0-rc.2
+  （2026-10 在 KCoder 桌面实机实测：spawn/回放/面板几何/工作区探针全通过）；
+  dsh 发 0.2.0 正式版时本范围即失配——这是有意的评审闸门，届时升版重审；
+- `engines`：`node >=20`（运行时基线）、`dsh` 同 peer 范围（声明性文档，
+  当前无读取方强制）。
+
+未声明 peer 的包不受准入约束（缺省即放行）；显式声明是同仓生态
+（dsh-coding-sidebar 1.0.35+ / dsh-file-review-kcoder 1.0.11+ /
+dsh-super-ppts 等）的现行约定，换来管理器的兼容展示与失配拦截。
+profile 侧 `autoInstallPeers: false` 下，声明的 peer 缺失只会产生
+pnpm 警告，不阻断安装（KCoder 桌面壳会自动补 `peerDependencyRules`）。
+
 ## QiLin 双通道适配（v1.1.0 起）
 
 manifest 同时声明 `qilin` 与 `dsh` 两个通道的 `bundle.patch` / `client`：
@@ -62,7 +84,15 @@ node-pty 版本契约：`^1.1.0`（v1.1.1 起声明于 dependencies），与 DSH
 （`@deepseek-ai/dsh-subprocess-local`）同 range——同 range 同 integrity 让
 pnpm 两侧解析到同一物理包（一份 native 绑定，无漂移）。dsh 0.1.6-alpha.2
 起依赖解析默认运行时模式且共享保留区（`profiles/node_modules`）被排除，
-未声明的提升副本不再可解析——声明依赖是唯一稳定入口。
+未声明的提升副本不再可解析——声明依赖是唯一稳定入口。两种实装形态的
+解析路径（0.2.0-rc.2 实测）：
+
+- **pnpm 安装形态**（`dsh plugin add`）：node-pty@1.1.x 落 profile 根
+  （`nodeLinker: hoisted`），从插件自身解析；
+- **桌面物化形态**（KCoder `ensureKcoderBundles` 直提）：插件目录不经
+  pnpm，`node-pty` 由运行时共享区提供（`<home>/profiles/node_modules/
+  node-pty`，0.2.0-rc.2 线为 1.2.0-beta.15，prebuilt spawn-helper 在位），
+  沿目录树向上解析命中。
 
 ## 安装
 
