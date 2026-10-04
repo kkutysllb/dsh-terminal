@@ -17,9 +17,10 @@ const PKG_NAME = '@kkutysllb/dsh-terminal'
 const HAS_CLIENT = true
 const INTACT = ['vendor']
 const KEEP_LEGACY = [] // 跨层持久化协议锚点（豁免旧名残留检查）
-/** dsh 兼容范围（与 peerDependencies 一字不差；上界 <0.2.0 使 0.2.0-rc.*
- * 预发布在 includePrerelease 语义下命中，0.2.0 正式版发布时须重新评审升版） */
-const DSH_COMPAT_RANGE = '>=0.1.6-alpha.2 <0.2.0'
+/** dsh 兼容范围（与 peerDependencies 一字不差；上界 <1.0.0 覆盖 0.2.x 全系
+ * 含 prerelease——0.2.0 正式版落地后旧上界 <0.2.0 会把 0.2.1-alpha.1 误拒，
+ * 该失配由 v1.2.2 修正，与家族其余插件同口径） */
+const DSH_COMPAT_RANGE = '>=0.1.6-alpha.2 <1.0.0'
 const DSH_PEERS = ['@deepseek-ai/dsh', '@deepseek-ai/dsh-host-webserver']
 
 const src = (p) => (existsSync(join(ROOT, p)) ? readFileSync(join(ROOT, p), 'utf8') : null)
