@@ -89,6 +89,42 @@ for (const f of files) {
 }
 ok('旧名/旧锚点零残留', residue.length === 0, residue.join('; '))
 
+// 5b) 面板镀铬 + shell 徽标（v1.3.0）——纯 client 面改动，此前没有
+// 任何断言覆盖；这几条钉住「服务端供名」与「拖条不实心」两条设计决定。
+if (HAS_CLIENT) {
+  ok('标签前置终端图标（icon → label → ×）',
+    client.includes("el('span', 'kt-tab-icon')") && client.includes('tabEl.append(icon, label, x)'),
+    '缺 icon 元素或未插到 label 之前')
+  ok('图标随 active/exited 变淡',
+    client.includes('.kt-tab[data-active="1"] .kt-tab-icon')
+      && client.includes('.kt-tab[data-exited="1"] .kt-tab-icon'))
+  ok('header 挂 shell 徽标', client.includes("el('span', 'kt-shell')") && client.includes('shellChip'))
+  // 关键设计决定：shell 名取自服务端 tabOf().title（$SHELL → passwd →
+  // bash 兜底链 / DSH_TERMINAL_SHELL 覆写的**实际落点**），客户端不得按
+  // 平台猜（猜会在用户自定义 shell 或 spawn 回退 bash 时说谎）。
+  ok('shell 名取自服务端 tabOf().title（客户端不猜平台）',
+    client.includes("const shellNameOf = (tab) => (typeof tab?.title === 'string' ? tab.title : '')")
+      && !/process\.platform/.test(client) && !/navigator\.platform/.test(client),
+    '未接服务端字段，或 client 内出现平台探测')
+  ok('徽标跟随活动标签 + 空桶收起',
+    client.includes('syncShellChip(p)') && client.includes('chip.hidden = true'))
+  // 用户报的「边框痕迹粗糙」根因就是这一行：上缘 4px 整条被刷成分隔色。
+  ok('上缘拖条不再实心填色（灰杠根因）',
+    !client.includes('panel.grip.style.background') && client.includes('.kt-grip::after'),
+    'grip 仍被实心填色，或缺少悬停胶囊')
+  ok('分隔线/徽标底色走 color-mix 派生（无硬编码）',
+    client.includes('color-mix(in srgb, ${p.token.fg} 14%, transparent)')
+      && !client.includes('token.border'),
+    '分隔色未走 color-mix，或死 token border 回流')
+  ok('面板上边框 + 圆角 + 投影（停靠区形态）',
+    client.includes('border-top:1px solid var(--kt-hair,transparent)')
+      && client.includes('border-top-left-radius:10px')
+      && client.includes('box-shadow:var(--kt-shadow,none)'))
+  // 降级卡此前从不调 applyPalette：暗色主题下它是一块 CSS 兜底的 #fff 白板。
+  const depsFn = client.slice(client.indexOf('const ensureDepsPanel'), client.indexOf('const ensurePanel'))
+  ok('降级卡同样吃 token（暗色不再白板）', depsFn.includes('applyPalette(panel)'))
+}
+
 // 6) 输出
 let fail = 0
 for (const [name, pass, detail] of checks) {
