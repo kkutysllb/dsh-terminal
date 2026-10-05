@@ -123,6 +123,14 @@ if (HAS_CLIENT) {
   // 降级卡此前从不调 applyPalette：暗色主题下它是一块 CSS 兜底的 #fff 白板。
   const depsFn = client.slice(client.indexOf('const ensureDepsPanel'), client.indexOf('const ensurePanel'))
   ok('降级卡同样吃 token（暗色不再白板）', depsFn.includes('applyPalette(panel)'))
+  // xterm viewport 固定 overflow-y:scroll（vendor/xterm.css:96），而本仓那份
+  // xterm.css 是裁剪版、不带任何滚动条配色 ⇒ 浏览器默认滚动条直接露出，
+  // 暗色下是面板右缘一条 15px 白杠（实测 2754–2783 设备像素、band max=750/765）。
+  ok('xterm viewport 滚动条已主题化（默认白杠修复）',
+    client.includes('.kt-term .xterm-viewport::-webkit-scrollbar-thumb')
+      && client.includes("'--kt-bar'")
+      && client.includes('scrollbar-width:thin'),
+    '缺滚动条配色或未接 --kt-bar')
 }
 
 // 6) 输出

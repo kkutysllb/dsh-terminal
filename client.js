@@ -345,6 +345,19 @@ body[data-ds-dark-theme] #${BTN_ID}:not(.kt-corner){color:rgba(232,234,237,.8)}
 .kt-term .kt-page{position:absolute;inset:0;padding:2px 8px 6px}
 .kt-term .kt-page[hidden]{display:none}
 .kt-term .xterm{height:100%}
+/* xterm viewport 固定 overflow-y:scroll（vendor/xterm.css:96），而本仓那份
+   xterm.css 是**裁剪版、不带任何滚动条配色规则** ⇒ 浏览器默认滚动条直接露出：
+   亮色下白底白条看不出来，暗色下就是面板右缘一条 15px 白杠（实测
+   offsetWidth-clientWidth=15，elementFromPoint 命中 .xterm-viewport）。
+   按亮暗主题给它一套细滚动条（track 透明 ⇒ 露出终端底色）。
+   注：两条写法并存是刻意的——Chromium ≥121 认 scrollbar-width/color 并忽略
+   ::-webkit-scrollbar；旧版（Electron 24 = Chromium 112）反之。 */
+.kt-term .xterm-viewport{scrollbar-width:thin;scrollbar-color:var(--kt-bar,transparent) transparent}
+.kt-term .xterm-viewport::-webkit-scrollbar{width:10px;height:10px}
+.kt-term .xterm-viewport::-webkit-scrollbar-track{background:transparent}
+.kt-term .xterm-viewport::-webkit-scrollbar-thumb{background:var(--kt-bar,transparent);background-clip:content-box;border:2px solid transparent;border-radius:6px}
+.kt-term .xterm-viewport::-webkit-scrollbar-thumb:hover{background:var(--kt-bar-hover,transparent);background-clip:content-box;border:2px solid transparent}
+.kt-term .xterm-viewport::-webkit-scrollbar-corner{background:transparent}
 .kt-exit{flex:none;display:none;align-items:center;gap:10px;padding:6px 12px;font-size:12px;opacity:.8;border-top:1px solid var(--kt-hair,transparent)}
 .kt-menu{position:fixed;z-index:901;min-width:148px;padding:4px;border-radius:8px;border:1px solid var(--kt-hair,transparent);box-shadow:0 10px 30px var(--kt-raise,rgba(0,0,0,.28));font-size:12px}
 .kt-menu button{all:unset;box-sizing:border-box;display:flex;width:100%;padding:5px 10px;border-radius:5px;cursor:pointer}
@@ -420,6 +433,9 @@ body[data-ds-dark-theme] #${BTN_ID}:not(.kt-corner){color:rgba(232,234,237,.8)}
         panel.root.style.setProperty('--kt-accent', p.token.accent)
         panel.root.style.setProperty('--kt-hair', `color-mix(in srgb, ${p.token.fg} 14%, transparent)`)
         panel.root.style.setProperty('--kt-chip', `color-mix(in srgb, ${p.token.fg} 6%, transparent)`)
+        // xterm viewport 的滚动条（见样式块注释）：默认滚动条在暗色下是白杠
+        panel.root.style.setProperty('--kt-bar', `color-mix(in srgb, ${p.token.fg} 26%, transparent)`)
+        panel.root.style.setProperty('--kt-bar-hover', `color-mix(in srgb, ${p.token.fg} 42%, transparent)`)
         panel.root.style.setProperty('--kt-raise', p.token.dark ? 'rgba(0,0,0,.6)' : 'rgba(15,23,42,.16)')
         panel.root.style.setProperty('--kt-shadow', p.token.dark
           ? '0 -10px 30px rgba(0,0,0,.55)'
